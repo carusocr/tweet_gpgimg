@@ -35,8 +35,8 @@ class  GPGTweet
   end
 
   def crypt_msg(msg, recip)
-    crypto = GPGME::Crypto.new, :armor => true
-    crypto.encrypt msg, recipients: recip, always_trust: true # <--risky? investigate
+    crypto = GPGME::Crypto.new(armor: true, always_trust: true) # risky? doesn't work without...
+    crypto.encrypt msg, recipients: recip
   end
 
 end
