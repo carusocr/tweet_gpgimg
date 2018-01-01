@@ -17,7 +17,8 @@ require 'gpgme'
 require 'yaml'
 
 msg_file = ARGV[0]
-img_file = ARGV[1]
+recip = ARGV[1]
+img_file = ARGV[2]
 
 class  GPGTweet
 
@@ -39,4 +40,27 @@ class  GPGTweet
     crypto.encrypt msg, recipients: recip
   end
 
+  def package_msg(msg, img_file)
+    img_ext = File.extname(img_file)
+    # output encrypted message to tmpfile
+    File.open('tmpfile','w') {|f| f.puts msg}
+    # run 'zip msg.zip tmpfile'
+    `zip msg.zip tmpfile`
+    # cat imagefile.jpg msg.zip > newimage.jpg
+    newimg = "newimg" + img_ext
+    `cat #{img_file} msg.zip > #{newimg}`
+    # remove msg.zip and tmpfile
+    return newimg
+  end
+
+  def post_img_tweet(img_file)
+    @client.update_with_media("Testing twgpgimg!", File.new(img_file))
+  end
+
 end
+
+msg_text = File.read(msg_file)
+c = GPGTweet.new
+msg = c.crypt_msg(msg_text, recip).to_s
+newimg = c.package_msg(msg, img_file)
+c.post_img_tweet(newimg)
